@@ -1,92 +1,135 @@
 "use client";
 
-import { Button, Card, CardBody, CardHeader } from "@heroui/react";
+import { Button, Card, CardBody, CardHeader, Divider } from "@heroui/react";
 import { signOut } from "next-auth/react";
+import { DashboardFilters } from "./dashboard-filters";
+import { StatsCharts } from "./stats-charts";
+import { WalletIcon, TrendingUpIcon, TrendingDownIcon, LogOutIcon } from "lucide-react";
 
 interface DashboardClientProps {
     user: { name?: string | null };
     totalBalance: number;
-    monthlyIncome: number;
-    monthlyExpense: number;
+    rangeIncome: number;
+    rangeExpense: number;
     recentTransactions: any[];
+    categoryData: any[];
+    dailyTrend: any[];
+    currentRange: string;
 }
 
 export function DashboardClient({
     user,
     totalBalance,
-    monthlyIncome,
-    monthlyExpense,
-    recentTransactions
+    rangeIncome,
+    rangeExpense,
+    recentTransactions,
+    categoryData,
+    dailyTrend,
+    currentRange
 }: DashboardClientProps) {
     return (
-        <div className="space-y-6">
-            <header className="flex justify-between items-center">
+        <div className="space-y-8 pb-10">
+            <header className="flex justify-between items-center bg-white dark:bg-content1 p-6 rounded-2xl border border-divider shadow-sm">
                 <div>
-                    <h1 className="text-3xl font-bold">Halo, {user?.name || "User"}! 👋</h1>
-                    <p className="text-default-500">Berikut adalah ringkasan keuangan kamu dan istri.</p>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        Halo, {user?.name || "User"}! 👋
+                    </h1>
+                    <p className="text-default-500 font-medium">Berikut adalah ringkasan keuangan kamu.</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant="flat"
-                        color="danger"
-                        onPress={() => signOut()}
-                    >
-                        Keluar
-                    </Button>
-                </div>
+                <Button
+                    variant="flat"
+                    color="danger"
+                    onPress={() => signOut()}
+                    startContent={<LogOutIcon size={18} />}
+                    className="font-bold border-danger-100 hover:bg-danger-50"
+                >
+                    Keluar
+                </Button>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-indigo-200">
-                    <CardHeader>Total Saldo</CardHeader>
-                    <CardBody className="text-3xl font-bold pb-6">
-                        Rp {totalBalance.toLocaleString('id-ID')}
-                    </CardBody>
-                </Card>
-                <Card className="bg-gradient-to-br from-success-500 to-success-600 text-white shadow-success-200">
-                    <CardHeader>Pemasukan Bulan Ini</CardHeader>
-                    <CardBody className="text-3xl font-bold pb-6">
-                        Rp {monthlyIncome.toLocaleString('id-ID')}
-                    </CardBody>
-                </Card>
-                <Card className="bg-gradient-to-br from-danger-500 to-danger-600 text-white shadow-danger-200">
-                    <CardHeader>Pengeluaran Bulan Ini</CardHeader>
-                    <CardBody className="text-3xl font-bold pb-6">
-                        Rp {monthlyExpense.toLocaleString('id-ID')}
-                    </CardBody>
-                </Card>
-            </div>
+            <DashboardFilters currentRange={currentRange} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader className="font-bold">Transaksi Terakhir</CardHeader>
-                    <CardBody>
-                        {recentTransactions.length === 0 ? (
-                            <p className="text-center text-default-400 py-10 italic">
-                                Belum ada data transaksi.
-                            </p>
-                        ) : (
-                            <div className="space-y-4">
-                                {recentTransactions.map((tx) => (
-                                    <div key={tx.id} className="flex justify-between items-center border-b border-default-100 pb-2">
-                                        <div>
-                                            <p className="font-medium">{tx.description || tx.category?.name || "Transaksi"}</p>
-                                            <p className="text-tiny text-default-500">{tx.fundSource.name} • {new Date(tx.date).toLocaleDateString()}</p>
-                                        </div>
-                                        <p className={tx.type === "INCOME" ? "text-success font-bold" : "text-danger font-bold"}>
-                                            {tx.type === "INCOME" ? "+" : "-"} Rp {tx.amount.toLocaleString('id-ID')}
-                                        </p>
-                                    </div>
-                                ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="border-none bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-xl shadow-indigo-200 dark:shadow-none">
+                    <CardBody className="p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <p className="font-medium opacity-80 uppercase tracking-wider text-tiny">Total Saldo</p>
+                            <div className="p-2 bg-white/20 rounded-lg">
+                                <WalletIcon size={20} />
                             </div>
-                        )}
+                        </div>
+                        <h2 className="text-3xl font-bold tracking-tight">
+                            Rp {totalBalance.toLocaleString('id-ID')}
+                        </h2>
                     </CardBody>
                 </Card>
 
-                <Card className="flex items-center justify-center p-10 bg-default-50 border-dashed border-2 border-default-200">
-                    <p className="text-default-400 text-center">Statistik visual lainnya akan muncul di sini (Charts Coming Soon)</p>
+                <Card className="border-none bg-gradient-to-br from-success-600 to-success-700 text-white shadow-xl shadow-success-200 dark:shadow-none">
+                    <CardBody className="p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <p className="font-medium opacity-80 uppercase tracking-wider text-tiny">Pemasukan ({currentRange})</p>
+                            <div className="p-2 bg-white/20 rounded-lg">
+                                <TrendingUpIcon size={20} />
+                            </div>
+                        </div>
+                        <h2 className="text-3xl font-bold tracking-tight">
+                            Rp {rangeIncome.toLocaleString('id-ID')}
+                        </h2>
+                    </CardBody>
+                </Card>
+
+                <Card className="border-none bg-gradient-to-br from-danger-600 to-danger-700 text-white shadow-xl shadow-danger-200 dark:shadow-none">
+                    <CardBody className="p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <p className="font-medium opacity-80 uppercase tracking-wider text-tiny">Pengeluaran ({currentRange})</p>
+                            <div className="p-2 bg-white/20 rounded-lg">
+                                <TrendingDownIcon size={20} />
+                            </div>
+                        </div>
+                        <h2 className="text-3xl font-bold tracking-tight">
+                            Rp {rangeExpense.toLocaleString('id-ID')}
+                        </h2>
+                    </CardBody>
                 </Card>
             </div>
+
+            <StatsCharts categoryData={categoryData} dailyTrend={dailyTrend} />
+
+            <Card className="shadow-sm border border-divider overflow-hidden">
+                <CardHeader className="px-6 pt-6">
+                    <h3 className="font-bold text-lg text-indigo-600">Transaksi Terakhir</h3>
+                </CardHeader>
+                <Divider className="my-2 mx-6" />
+                <CardBody className="px-6 pb-6">
+                    {recentTransactions.length === 0 ? (
+                        <div className="text-center text-default-400 py-16 flex flex-col items-center gap-2">
+                            <p className="italic">Belum ada data transaksi.</p>
+                            <Button variant="flat" size="sm" color="primary">Catat Sekarang</Button>
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            {recentTransactions.map((tx) => (
+                                <div key={tx.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-default-50 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-xl ${tx.type === "INCOME" ? "bg-success-50 text-success" : "bg-danger-50 text-danger"}`}>
+                                            {tx.type === "INCOME" ? <TrendingUpIcon size={18} /> : <TrendingDownIcon size={18} />}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-sm">{tx.description || tx.category?.name || "Transaksi"}</p>
+                                            <p className="text-tiny text-default-500 font-medium">
+                                                {tx.fundSource.name} • {new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <p className={`text-sm font-black ${tx.type === "INCOME" ? "text-success" : "text-danger"}`}>
+                                        {tx.type === "INCOME" ? "+" : "-"} Rp {tx.amount.toLocaleString('id-ID')}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardBody>
+            </Card>
         </div>
     );
 }

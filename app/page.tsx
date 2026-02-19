@@ -1,37 +1,99 @@
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { fundSources, transactions } from "@/db/schema";
-import { sql, desc } from "drizzle-orm";
+import { fundSources, transactions, categories } from "@/db/schema";
+import { sql, desc, and, gte, lte, eq } from "drizzle-orm";
 import { DashboardClient } from "@/components/dashboard-client";
+import { startOfDay, startOfWeek, startOfMonth, startOfYear, subDays, endOfDay } from "date-fns";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
   const session = await auth();
+  const { range = "month" } = await searchParams;
 
-  // 1. Get Total Balance
+  const now = new Date();
+  let startDate: Date;
+
+  switch (range) {
+    case "today":
+      startDate = startOfDay(now);
+      break;
+    case "week":
+      startDate = startOfWeek(now, { weekStartsOn: 1 });
+      break;
+    case "year":
+      startDate = startOfYear(now);
+      break;
+    case "all":
+      startDate = new Date(0);
+      break;
+    case "month":
+    default:
+      startDate = startOfMonth(now);
+      break;
+  }
+
+  // 1. Get Total Balance (Overall, not affected by range)
   const [balanceResult] = await db
     .select({ total: sql<number>`SUM(${fundSources.balance})` })
     .from(fundSources);
   const totalBalance = balanceResult?.total || 0;
 
-  // 2. Get Monthly Income & Expense
-  const firstDayOfMonth = new Date();
-  firstDayOfMonth.setDate(1);
-  firstDayOfMonth.setHours(0, 0, 0, 0);
-
+  // 2. Get Income & Expense for the selected range
   const [incomeResult] = await db
     .select({ total: sql<number>`SUM(${transactions.amount})` })
     .from(transactions)
-    .where(sql`${transactions.type} = 'INCOME' AND ${transactions.date} >= ${firstDayOfMonth}`);
+    .where(
+      and(
+        eq(transactions.type, 'INCOME'),
+        gte(transactions.date, startDate)
+      )
+    );
 
   const [expenseResult] = await db
     .select({ total: sql<number>`SUM(${transactions.amount})` })
     .from(transactions)
-    .where(sql`${transactions.type} = 'EXPENSE' AND ${transactions.date} >= ${firstDayOfMonth}`);
+    .where(
+      and(
+        eq(transactions.type, 'EXPENSE'),
+        gte(transactions.date, startDate)
+      )
+    );
 
-  const monthlyIncome = incomeResult?.total || 0;
-  const monthlyExpense = expenseResult?.total || 0;
+  const rangeIncome = incomeResult?.total || 0;
+  const rangeExpense = expenseResult?.total || 0;
 
-  // 3. Get Recent Transactions
+  // 3. Get Chart Data: Spending by Category
+  const categoryData = await db
+    .select({
+      name: categories.name,
+      value: sql<number>`SUM(${transactions.amount})`,
+    })
+    .from(transactions)
+    .innerJoin(categories, eq(transactions.categoryId, categories.id))
+    .where(
+      and(
+        eq(transactions.type, 'EXPENSE'),
+        gte(transactions.date, startDate)
+      )
+    )
+    .groupBy(categories.name);
+
+  // 4. Get Chart Data: Daily Trend
+  // We'll fetch transactions for the period and group them in JS for more flexibility with charts
+  const dailyTransactions = await db
+    .select({
+      date: transactions.date,
+      amount: transactions.amount,
+      type: transactions.type,
+    })
+    .from(transactions)
+    .where(gte(transactions.date, startDate))
+    .orderBy(transactions.date);
+
+  // 5. Get Recent Transactions
   const recentTransactions = await db.query.transactions.findMany({
     with: { fundSource: true, category: true },
     limit: 5,
@@ -42,9 +104,16 @@ export default async function DashboardPage() {
     <DashboardClient
       user={session?.user || {}}
       totalBalance={totalBalance}
-      monthlyIncome={monthlyIncome}
-      monthlyExpense={monthlyExpense}
+      rangeIncome={rangeIncome}
+      rangeExpense={rangeExpense}
       recentTransactions={recentTransactions}
+      categoryData={categoryData}
+      dailyTrend={dailyTransactions.map(t => ({
+        date: t.date.toISOString(),
+        amount: Number(t.amount),
+        type: t.type
+      }))}
+      currentRange={range}
     />
   );
 }

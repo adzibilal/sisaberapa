@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { Card, CardHeader, CardBody, Input, Button, Image } from "@heroui/react";
+import { Card, CardHeader, CardBody, Input, Button } from "@heroui/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import logoImg from "@/public/logo-sisaberapa.png";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
@@ -41,8 +43,12 @@ export default function LoginPage() {
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
             <Card className="max-w-[400px] w-full shadow-2xl backdrop-blur-md bg-white/90">
                 <CardHeader className="flex flex-col gap-1 items-center pb-0 pt-8">
-                    <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg mb-4">
-                        <h1 className="text-2xl font-bold text-white tracking-tight">Sisa Berapa?</h1>
+                    <div className="w-full max-w-[150px] mb-4">
+                        <Image
+                            src={logoImg}
+                            alt="SisaBerapa Logo"
+                            priority
+                        />
                     </div>
                     <p className="text-default-500 text-small">Masuk untuk mencatat keuangan</p>
                 </CardHeader>

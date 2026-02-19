@@ -5,7 +5,9 @@ import { siteConfig } from "@/config/site";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { Logo } from "@/components/icons";
+
+import Image from "next/image";
+import logoImg from "@/public/logo-sisaberapa.png";
 
 export const Sidebar = () => {
     const pathname = usePathname();
@@ -13,8 +15,13 @@ export const Sidebar = () => {
     return (
         <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-divider bg-content1 px-4 py-8">
             <div className="flex items-center gap-2 mb-10 px-2">
-                <Logo />
-                <p className="font-bold text-2xl text-indigo-600">SisaBerapa?</p>
+                <NextLink href="/" className="flex items-center justify-center w-full px-6">
+                    <Image
+                        src={logoImg}
+                        alt="SisaBerapa Logo"
+                        priority
+                    />
+                </NextLink>
             </div>
 
             <nav className="flex-grow space-y-2">
