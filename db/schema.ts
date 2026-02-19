@@ -61,5 +61,14 @@ export const transactions = pgTable("transactions", {
     .notNull(),
   categoryId: integer("category_id").references(() => categories.id),
   installmentId: integer("installment_id").references(() => installments.id),
+  billId: integer("bill_id").references(() => bills.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const bills = pgTable("bills", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  amount: doublePrecision("amount").notNull(),
+  lastPaidAt: timestamp("last_paid_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

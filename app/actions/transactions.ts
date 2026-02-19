@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { transactions, fundSources } from "@/db/schema";
+import { transactions, fundSources, bills } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -63,9 +63,49 @@ export async function deleteTransaction(id: number) {
 
     // 3. Delete transaction
     await tx.delete(transactions).where(eq(transactions.id, id));
+
+    // 4. Update bill lastPaidAt if applicable
+    let billId = transaction.billId;
+
+    // Handle legacy case: if no billId, try to find bill by name
+    if (!billId && transaction.description?.startsWith("Tagihan: ")) {
+      const billName = transaction.description.replace("Tagihan: ", "");
+      const [bill] = await tx
+        .select({ id: bills.id })
+        .from(bills)
+        .where(eq(bills.name, billName));
+      if (bill) {
+        billId = bill.id;
+      }
+    }
+
+    if (billId) {
+      // Find the latest transaction for this bill (using the same logic as getBillTransactions)
+      const [bill] = await tx
+        .select({ name: bills.name })
+        .from(bills)
+        .where(eq(bills.id, billId));
+
+      if (bill) {
+        const [latestTx] = await tx
+          .select({ date: transactions.date })
+          .from(transactions)
+          .where(
+            sql`(${transactions.billId} = ${billId}) OR (${transactions.billId} IS NULL AND ${transactions.description} = ${`Tagihan: ${bill.name}`})`,
+          )
+          .orderBy(sql`${transactions.date} DESC`)
+          .limit(1);
+
+        await tx
+          .update(bills)
+          .set({ lastPaidAt: latestTx ? latestTx.date : null })
+          .where(eq(bills.id, billId));
+      }
+    }
   });
 
   revalidatePath("/transactions");
   revalidatePath("/");
   revalidatePath("/fund-sources");
+  revalidatePath("/bills");
 }

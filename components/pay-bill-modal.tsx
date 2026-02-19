@@ -11,21 +11,19 @@ import {
     useDisclosure,
     Select,
     SelectItem,
-    Input,
 } from "@heroui/react";
-import { payInstallment } from "@/app/actions/installments";
+import { payBill } from "@/app/actions/bills";
 
-export function PayInstallmentModal({ installment, fundSources }: { installment: any, fundSources: any[] }) {
+export function PayBillModal({ bill, fundSources }: { bill: any, fundSources: any[] }) {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [fundSourceId, setFundSourceId] = useState("");
-    const [amount, setAmount] = useState(installment.monthlyAmount.toString());
     const [loading, setLoading] = useState(false);
 
     const handlePay = async () => {
-        if (!fundSourceId || !amount) return;
+        if (!fundSourceId) return;
         setLoading(true);
         try {
-            await payInstallment(installment.id, parseInt(fundSourceId), parseFloat(amount));
+            await payBill(bill.id, parseInt(fundSourceId));
             onClose();
         } catch (error) {
             console.error(error);
@@ -36,36 +34,25 @@ export function PayInstallmentModal({ installment, fundSources }: { installment:
 
     return (
         <>
-            <Button onPress={onOpen} color="primary" variant="shadow" fullWidth>
-                Bayar Cicilan
+            <Button onPress={onOpen} color="primary" variant="shadow" fullWidth className="font-bold uppercase tracking-tight">
+                Bayar Sekarang
             </Button>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader>Bayar Cicilan: {installment.name}</ModalHeader>
+                            <ModalHeader className="text-xl font-black uppercase tracking-tighter">Konfirmasi Pembayaran</ModalHeader>
                             <ModalBody className="space-y-4">
-                                <p className="text-default-600">
-                                    Masukkan nominal yang ingin dibayarkan.
-                                </p>
-                                <Input
-                                    label="Nominal Pembayaran"
-                                    placeholder="0.00"
-                                    variant="bordered"
-                                    type="number"
-                                    value={amount}
-                                    onValueChange={setAmount}
-                                    startContent={
-                                        <div className="pointer-events-none flex items-center">
-                                            <span className="text-default-400 text-small">Rp</span>
-                                        </div>
-                                    }
-                                    isRequired
-                                />
+                                <div className="bg-default-100 p-4 rounded-2xl space-y-1">
+                                    <p className="text-xs uppercase font-bold text-default-400">Tagihan</p>
+                                    <p className="text-lg font-bold">{bill.name}</p>
+                                    <p className="text-2xl font-black text-danger">Rp {bill.amount.toLocaleString('id-ID')}</p>
+                                </div>
                                 <Select
                                     label="Pilih Sumber Dana"
                                     placeholder="Pilih rekening/dompet"
                                     variant="bordered"
+                                    radius="lg"
                                     selectedKeys={fundSourceId ? new Set([fundSourceId]) : new Set()}
                                     onChange={(e) => setFundSourceId(e.target.value)}
                                     isRequired
@@ -78,11 +65,11 @@ export function PayInstallmentModal({ installment, fundSources }: { installment:
                                 </Select>
                             </ModalBody>
                             <ModalFooter>
-                                <Button color="danger" variant="flat" onPress={onClose}>
+                                <Button color="danger" variant="flat" onPress={onClose} className="font-bold">
                                     Batal
                                 </Button>
-                                <Button color="primary" onPress={handlePay} isLoading={loading}>
-                                    Konfirmasi Pembayaran
+                                <Button color="primary" onPress={handlePay} isLoading={loading} className="font-bold px-8 shadow-lg shadow-primary-200">
+                                    Konfirmasi & Bayar
                                 </Button>
                             </ModalFooter>
                         </>

@@ -25,6 +25,10 @@ export const siteConfig = {
       href: "/installments",
     },
     {
+      label: "Tagihan",
+      href: "/bills",
+    },
+    {
       label: "Kelola User",
       href: "/users",
     },
@@ -49,6 +53,10 @@ export const siteConfig = {
     {
       label: "Cicilan",
       href: "/installments",
+    },
+    {
+      label: "Tagihan",
+      href: "/bills",
     },
     {
       label: "Kelola User",
