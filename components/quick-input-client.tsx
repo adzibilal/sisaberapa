@@ -15,8 +15,9 @@ import {
 } from "@heroui/react";
 import { SparklesIcon, CheckIcon, XIcon, Loader2 } from "lucide-react";
 import { processQuickInput } from "@/app/actions/quick-input";
-import { addTransaction } from "@/app/actions/transactions";
+import { addTransaction, deleteTransaction } from "@/app/actions/transactions";
 import { useRouter } from "next/navigation";
+
 
 export function QuickInputClient({ categories, fundSources }: { categories: any[], fundSources: any[] }) {
     const router = useRouter();
@@ -24,6 +25,9 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
     const [loading, setLoading] = useState(false);
     const [parsedData, setParsedData] = useState<any>(null);
     const [saving, setSaving] = useState(false);
+    const [lastTransactionId, setLastTransactionId] = useState<number | null>(null);
+    const [undoing, setUndoing] = useState(false);
+
 
     const handleProcess = async () => {
         if (!input) return;
@@ -41,15 +45,31 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
     const handleConfirm = async () => {
         setSaving(true);
         try {
-            await addTransaction(parsedData);
-            router.push("/transactions");
-            router.refresh();
+            const txId = await addTransaction(parsedData);
+            setLastTransactionId(txId || null);
+            setParsedData(null);
+            setInput("");
+            // router.refresh(); // Refresh data in background if needed, but we aren't displaying it here.
         } catch (error) {
             alert("Gagal menyimpan transaksi.");
         } finally {
             setSaving(false);
         }
     };
+
+    const handleUndo = async () => {
+        if (!lastTransactionId) return;
+        setUndoing(true);
+        try {
+            await deleteTransaction(lastTransactionId);
+            setLastTransactionId(null);
+        } catch (error) {
+            alert("Gagal menghapus transaksi.");
+        } finally {
+            setUndoing(false);
+        }
+    };
+
 
     return (
         <div className="max-w-xl mx-auto space-y-6">
@@ -87,6 +107,31 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                 </CardBody>
             </Card>
 
+            {lastTransactionId && !parsedData && (
+                <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-bottom-4">
+                    <CardBody className="flex flex-row items-center justify-between p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 dark:bg-green-800 rounded-full text-green-600 dark:text-green-400">
+                                <CheckIcon size={18} />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-green-700 dark:text-green-300">Transaksi Berhasil Disimpan!</p>
+                                <p className="text-xs text-green-600 dark:text-green-400">Salah input? Kamu bisa batalkan sekarang.</p>
+                            </div>
+                        </div>
+                        <Button
+                            color="danger"
+                            variant="flat"
+                            size="sm"
+                            onPress={handleUndo}
+                            isLoading={undoing}
+                        >
+                            Undo Transaksi
+                        </Button>
+                    </CardBody>
+                </Card>
+            )}
+
             {parsedData && (
                 <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <CardHeader className="px-6 pt-6">
@@ -113,7 +158,7 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                                 onSelectionChange={(keys: any) => setParsedData({ ...parsedData, fundSourceId: Number(Array.from(keys)[0]) })}
                             >
                                 {fundSources.map((s) => (
-                                    <SelectItem key={s.id.toString()} value={s.id.toString()}>
+                                    <SelectItem key={s.id.toString()}>
                                         {s.name}
                                     </SelectItem>
                                 ))}
@@ -125,7 +170,7 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                                 onSelectionChange={(keys: any) => setParsedData({ ...parsedData, categoryId: Number(Array.from(keys)[0]) })}
                             >
                                 {categories.map((c) => (
-                                    <SelectItem key={c.id.toString()} value={c.id.toString()}>
+                                    <SelectItem key={c.id.toString()}>
                                         {c.name}
                                     </SelectItem>
                                 ))}

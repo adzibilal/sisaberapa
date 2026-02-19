@@ -1,17 +1,15 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { db } from "@/db";
 import { categories, fundSources } from "@/db/schema";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+const openai = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
 
 export async function processQuickInput(text: string) {
   // 1. Fetch context from DB
   const allCategories = await db.select().from(categories);
   const allSources = await db.select().from(fundSources);
-
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
   const prompt = `
     You are a financial assistant for an app called SisaBerapa.
@@ -41,23 +39,24 @@ export async function processQuickInput(text: string) {
     `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let jsonText = response.text();
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const jsonText = completion.choices[0].message.content ?? "";
 
     console.log("AI Raw Response:", jsonText);
 
-    // More robust JSON extraction
-    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("AI did not return a valid JSON object");
-    }
-
-    jsonText = jsonMatch[0];
     return JSON.parse(jsonText);
   } catch (error: any) {
     console.error("AI Error Details:", error);
-    // Return the error message to help debugging
     throw new Error(`AI Error: ${error.message || "Unknown error"}`);
   }
 }

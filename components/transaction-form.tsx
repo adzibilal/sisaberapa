@@ -93,7 +93,7 @@ export function TransactionForm({ fundSources, categories }: { fundSources: any[
                                     isRequired
                                 >
                                     {fundSources.map((source) => (
-                                        <SelectItem key={source.id} value={source.id}>
+                                        <SelectItem key={source.id}>
                                             {source.name}
                                         </SelectItem>
                                     ))}
@@ -107,7 +107,7 @@ export function TransactionForm({ fundSources, categories }: { fundSources: any[
                                     onSelectionChange={(keys) => setCategoryId(Array.from(keys)[0] as string)}
                                 >
                                     {filteredCategories.map((cat) => (
-                                        <SelectItem key={cat.id} value={cat.id}>
+                                        <SelectItem key={cat.id}>
                                             {cat.name}
                                         </SelectItem>
                                     ))}

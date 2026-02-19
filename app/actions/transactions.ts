@@ -14,17 +14,24 @@ export async function addTransaction(data: {
   installmentId?: number;
   date?: Date;
 }) {
+  let transactionId: number | undefined;
+
   await db.transaction(async (tx) => {
     // 1. Insert transaction
-    await tx.insert(transactions).values({
-      amount: data.amount,
-      type: data.type,
-      description: data.description,
-      fundSourceId: data.fundSourceId,
-      categoryId: data.categoryId,
-      installmentId: data.installmentId,
-      date: data.date || new Date(),
-    });
+    const [inserted] = await tx
+      .insert(transactions)
+      .values({
+        amount: data.amount,
+        type: data.type,
+        description: data.description,
+        fundSourceId: data.fundSourceId,
+        categoryId: data.categoryId,
+        installmentId: data.installmentId,
+        date: data.date || new Date(),
+      })
+      .returning({ id: transactions.id });
+
+    transactionId = inserted?.id;
 
     // 2. Update fund source balance
     const balanceChange = data.type === "INCOME" ? data.amount : -data.amount;
@@ -37,6 +44,8 @@ export async function addTransaction(data: {
   revalidatePath("/");
   revalidatePath("/transactions");
   revalidatePath("/fund-sources");
+
+  return transactionId;
 }
 
 export async function deleteTransaction(id: number) {

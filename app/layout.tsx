@@ -11,11 +11,25 @@ import { fontSans } from "@/config/fonts";
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
+    template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  keywords: ["keuangan keluarga", "tracking cicilan", "tagihan bulanan", "manajemen keuangan", "sisaberapa"],
+  authors: [{ name: "Sisaberapa" }],
   icons: {
     icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    type: "website",
+    locale: "id_ID",
+    siteName: siteConfig.name,
+  },
+  twitter: {
+    card: "summary",
+    title: siteConfig.name,
+    description: siteConfig.description,
   },
 };
 

@@ -1,8 +1,9 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Next.js + HeroUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "Sisaberapa",
+  description:
+    "Pantau keuangan keluarga dengan mudah — tracking saldo, transaksi, cicilan, dan tagihan bulanan dalam satu tempat.",
   navItems: [
     {
       label: "Quick Input",
