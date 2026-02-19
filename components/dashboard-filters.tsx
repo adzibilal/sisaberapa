@@ -17,7 +17,7 @@ export function DashboardFilters({ currentRange }: { currentRange: string }) {
     return (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-content1 p-4 rounded-2xl border border-divider shadow-sm">
             <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600">
+                <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-900 dark:text-white">
                     <CalendarIcon size={20} />
                 </div>
                 <div>
@@ -31,9 +31,9 @@ export function DashboardFilters({ currentRange }: { currentRange: string }) {
                 variant="pills"
                 color="primary"
                 classNames={{
-                    tabList: "bg-default-100",
-                    cursor: "bg-indigo-600 shadow-indigo-200",
-                    tabContent: "font-medium"
+                    tabList: "bg-zinc-100 dark:bg-zinc-800",
+                    cursor: "bg-zinc-900 dark:bg-zinc-100 shadow-sm",
+                    tabContent: "font-bold group-data-[selected=true]:text-white dark:group-data-[selected=true]:text-zinc-900"
                 }}
             >
                 <Tab key="today" title="Hari Ini" />

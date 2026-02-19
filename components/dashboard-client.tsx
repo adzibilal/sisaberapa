@@ -31,17 +31,17 @@ export function DashboardClient({
         <div className="space-y-8 pb-10">
             <header className="flex justify-between items-center bg-white dark:bg-content1 p-6 rounded-2xl border border-divider shadow-sm">
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">
                         Halo, {user?.name || "User"}! 👋
                     </h1>
                     <p className="text-default-500 font-medium">Berikut adalah ringkasan keuangan kamu.</p>
                 </div>
                 <Button
-                    variant="flat"
-                    color="danger"
+                    variant="bordered"
+                    color="default"
                     onPress={() => signOut()}
                     startContent={<LogOutIcon size={18} />}
-                    className="font-bold border-danger-100 hover:bg-danger-50"
+                    className="font-bold border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
                     Keluar
                 </Button>
@@ -50,43 +50,43 @@ export function DashboardClient({
             <DashboardFilters currentRange={currentRange} />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="border-none bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-xl shadow-indigo-200 dark:shadow-none">
+                <Card className="border-none bg-zinc-900 text-white shadow-xl dark:bg-zinc-800 dark:shadow-none">
                     <CardBody className="p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <p className="font-medium opacity-80 uppercase tracking-wider text-tiny">Total Saldo</p>
-                            <div className="p-2 bg-white/20 rounded-lg">
+                            <p className="font-medium opacity-60 uppercase tracking-widest text-tiny">Total Saldo</p>
+                            <div className="p-2 bg-white/10 rounded-lg">
                                 <WalletIcon size={20} />
                             </div>
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tight">
+                        <h2 className="text-3xl font-black tracking-tighter">
                             Rp {totalBalance.toLocaleString('id-ID')}
                         </h2>
                     </CardBody>
                 </Card>
 
-                <Card className="border-none bg-gradient-to-br from-success-600 to-success-700 text-white shadow-xl shadow-success-200 dark:shadow-none">
+                <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
                     <CardBody className="p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <p className="font-medium opacity-80 uppercase tracking-wider text-tiny">Pemasukan ({currentRange})</p>
-                            <div className="p-2 bg-white/20 rounded-lg">
+                            <p className="font-medium text-zinc-500 uppercase tracking-widest text-tiny">Pemasukan ({currentRange})</p>
+                            <div className="p-2 bg-success-50 dark:bg-success-900/20 rounded-lg text-success">
                                 <TrendingUpIcon size={20} />
                             </div>
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tight">
+                        <h2 className="text-3xl font-black tracking-tighter text-success">
                             Rp {rangeIncome.toLocaleString('id-ID')}
                         </h2>
                     </CardBody>
                 </Card>
 
-                <Card className="border-none bg-gradient-to-br from-danger-600 to-danger-700 text-white shadow-xl shadow-danger-200 dark:shadow-none">
+                <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
                     <CardBody className="p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <p className="font-medium opacity-80 uppercase tracking-wider text-tiny">Pengeluaran ({currentRange})</p>
-                            <div className="p-2 bg-white/20 rounded-lg">
+                            <p className="font-medium text-zinc-500 uppercase tracking-widest text-tiny">Pengeluaran ({currentRange})</p>
+                            <div className="p-2 bg-danger-50 dark:bg-danger-900/20 rounded-lg text-danger">
                                 <TrendingDownIcon size={20} />
                             </div>
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tight">
+                        <h2 className="text-3xl font-black tracking-tighter text-danger">
                             Rp {rangeExpense.toLocaleString('id-ID')}
                         </h2>
                     </CardBody>
@@ -97,7 +97,7 @@ export function DashboardClient({
 
             <Card className="shadow-sm border border-divider overflow-hidden">
                 <CardHeader className="px-6 pt-6">
-                    <h3 className="font-bold text-lg text-indigo-600">Transaksi Terakhir</h3>
+                    <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">Transaksi Terakhir</h3>
                 </CardHeader>
                 <Divider className="my-2 mx-6" />
                 <CardBody className="px-6 pb-6">

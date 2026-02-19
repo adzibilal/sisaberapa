@@ -19,7 +19,7 @@ import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 
-const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"];
+const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#f43f5e"];
 
 export function StatsCharts({
     categoryData,
@@ -70,7 +70,7 @@ export function StatsCharts({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="shadow-sm border border-divider">
                 <CardHeader className="flex flex-col items-start px-6 pt-6">
-                    <h3 className="font-bold text-lg text-indigo-600">Tren Keuangan</h3>
+                    <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">Tren Keuangan</h3>
                     <p className="text-tiny text-default-500">Perbandingan pemasukan & pengeluaran</p>
                 </CardHeader>
                 <Divider className="my-2" />
@@ -101,8 +101,8 @@ export function StatsCharts({
                             <Area
                                 type="monotone"
                                 dataKey="pemasukan"
-                                stroke="#10B981"
-                                strokeWidth={2}
+                                stroke="#16a34a"
+                                strokeWidth={3}
                                 fillOpacity={1}
                                 fill="url(#colorInc)"
                                 name="Pemasukan"
@@ -110,8 +110,8 @@ export function StatsCharts({
                             <Area
                                 type="monotone"
                                 dataKey="pengeluaran"
-                                stroke="#EF4444"
-                                strokeWidth={2}
+                                stroke="#dc2626"
+                                strokeWidth={3}
                                 fillOpacity={1}
                                 fill="url(#colorExp)"
                                 name="Pengeluaran"
@@ -123,7 +123,7 @@ export function StatsCharts({
 
             <Card className="shadow-sm border border-divider">
                 <CardHeader className="flex flex-col items-start px-6 pt-6">
-                    <h3 className="font-bold text-lg text-indigo-600">Breakdown Pengeluaran</h3>
+                    <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">Breakdown Pengeluaran</h3>
                     <p className="text-tiny text-default-500">Distribusi pengeluaran per kategori</p>
                 </CardHeader>
                 <Divider className="my-2" />

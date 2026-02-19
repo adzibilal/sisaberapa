@@ -40,8 +40,8 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
-            <Card className="max-w-[400px] w-full shadow-2xl backdrop-blur-md bg-white/90">
+        <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4 font-sans">
+            <Card className="max-w-[400px] w-full shadow-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 <CardHeader className="flex flex-col gap-1 items-center pb-0 pt-8">
                     <div className="w-full max-w-[150px] mb-4">
                         <Image
@@ -62,8 +62,8 @@ export default function LoginPage() {
                             onValueChange={setUsername}
                             isRequired
                             classNames={{
-                                label: "text-indigo-600 font-medium",
-                                inputWrapper: "hover:border-indigo-400 focus-within:border-indigo-600"
+                                label: "text-zinc-900 dark:text-zinc-100 font-bold",
+                                inputWrapper: "hover:border-zinc-400 focus-within:border-zinc-900 dark:focus-within:border-zinc-100"
                             }}
                         />
                         <Input
@@ -75,8 +75,8 @@ export default function LoginPage() {
                             onValueChange={setPassword}
                             isRequired
                             classNames={{
-                                label: "text-indigo-600 font-medium",
-                                inputWrapper: "hover:border-indigo-400 focus-within:border-indigo-600"
+                                label: "text-zinc-900 dark:text-zinc-100 font-bold",
+                                inputWrapper: "hover:border-zinc-400 focus-within:border-zinc-900 dark:focus-within:border-zinc-100"
                             }}
                         />
                         {error && <p className="text-danger text-tiny text-center">{error}</p>}
@@ -84,7 +84,7 @@ export default function LoginPage() {
                             color="primary"
                             type="submit"
                             isLoading={loading}
-                            className="bg-indigo-600 hover:bg-indigo-700 font-bold py-6 text-md shadow-xl transition-all"
+                            className="bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 hover:bg-black dark:hover:bg-white font-bold py-6 text-md shadow-xl transition-all"
                         >
                             Masuk
                         </Button>

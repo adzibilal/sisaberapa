@@ -53,10 +53,10 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
 
     return (
         <div className="max-w-xl mx-auto space-y-6">
-            <Card className="border-none shadow-2xl bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/20 dark:to-background">
+            <Card className="border border-divider shadow-sm bg-white dark:bg-zinc-900">
                 <CardHeader className="flex flex-col items-start px-6 pt-6">
                     <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <SparklesIcon className="text-indigo-600" />
+                        <SparklesIcon className="text-zinc-900 dark:text-zinc-100" />
                         Quick Input AI
                     </h1>
                     <p className="text-default-500 text-sm">
@@ -76,7 +76,7 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                         <Button
                             color="primary"
                             size="lg"
-                            className="bg-indigo-600"
+                            className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold"
                             isIconOnly
                             isLoading={loading}
                             onPress={handleProcess}
@@ -142,7 +142,7 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                             </Button>
                             <Button
                                 color="primary"
-                                className="bg-indigo-600 font-bold"
+                                className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold"
                                 fullWidth
                                 onPress={handleConfirm}
                                 isLoading={saving}

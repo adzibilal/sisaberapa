@@ -34,8 +34,8 @@ export const Sidebar = () => {
                             className={clsx(
                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium",
                                 isActive
-                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                                    : "text-default-500 hover:bg-default-100"
+                                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-lg"
+                                    : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                             )}
                         >
                             {item.label}
@@ -45,9 +45,9 @@ export const Sidebar = () => {
             </nav>
 
             <div className="mt-auto px-2">
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm shadow-xl">
-                    <p className="font-bold mb-1">Butuh Bantuan?</p>
-                    <p className="text-white/80 text-xs">Hubungi pengembang jika ada kendala sistem.</p>
+                <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-divider text-zinc-900 dark:text-zinc-100 text-sm shadow-sm">
+                    <p className="font-bold text-2xl text-zinc-900 dark:text-white">SisaBerapa</p>
+                    <p className="text-zinc-500 text-xs">Hubungi pengembang jika ada kendala sistem.</p>
                 </div>
             </div>
         </aside>
