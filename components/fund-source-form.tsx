@@ -16,6 +16,7 @@ import { addFundSource, updateFundSource } from "@/app/actions/fund-sources";
 
 interface FundSourceFormProps {
     mode?: "add" | "edit";
+    isDark?: boolean;
     initialData?: {
         id: number;
         name: string;
@@ -23,7 +24,7 @@ interface FundSourceFormProps {
     };
 }
 
-export function FundSourceForm({ mode = "add", initialData }: FundSourceFormProps) {
+export function FundSourceForm({ mode = "add", isDark = false, initialData }: FundSourceFormProps) {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [name, setName] = useState(initialData?.name || "");
     const [balance, setBalance] = useState(initialData?.balance?.toString() || "0");
@@ -56,12 +57,13 @@ export function FundSourceForm({ mode = "add", initialData }: FundSourceFormProp
                 isIconOnly={mode === "edit"}
                 startContent={mode === "add" ? <PlusIcon /> : <PencilIcon />}
                 size={mode === "edit" ? "sm" : "md"}
+                className={isDark ? "text-white/80 hover:text-white" : ""}
             >
                 {mode === "add" && "Tambah Sumber Dana"}
             </Button>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center">
                 <ModalContent>
-                    {(onClose) => (
+                    {(onClose: () => void) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">
                                 {mode === "add" ? "Tambah Sumber Dana" : "Edit Sumber Dana"}

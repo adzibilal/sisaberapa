@@ -40,9 +40,32 @@ export async function addTransaction(data: {
 }
 
 export async function deleteTransaction(id: number) {
-  // Logic to revert balance would be complex without knowing original amount easily
-  // For MVP, we just delete.
-  await db.delete(transactions).where(eq(transactions.id, id));
+  await db.transaction(async (tx) => {
+    // 1. Get transaction details
+    const [transaction] = await tx
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, id));
+
+    if (!transaction) return;
+
+    // 2. Revert balance
+    // If it was an INCOME, we subtract. If it was an EXPENSE, we add back.
+    const balanceReversion =
+      transaction.type === "INCOME"
+        ? -Number(transaction.amount)
+        : Number(transaction.amount);
+
+    await tx
+      .update(fundSources)
+      .set({ balance: sql`${fundSources.balance} + ${balanceReversion}` })
+      .where(eq(fundSources.id, transaction.fundSourceId));
+
+    // 3. Delete transaction
+    await tx.delete(transactions).where(eq(transactions.id, id));
+  });
+
   revalidatePath("/transactions");
   revalidatePath("/");
+  revalidatePath("/fund-sources");
 }
