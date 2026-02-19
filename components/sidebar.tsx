@@ -8,6 +8,7 @@ import clsx from "clsx";
 
 import Image from "next/image";
 import logoImg from "@/public/logo-sisaberapa.png";
+import { ThemeSwitch } from "./theme-switch";
 
 export const Sidebar = () => {
     const pathname = usePathname();
@@ -44,10 +45,10 @@ export const Sidebar = () => {
                 })}
             </nav>
 
-            <div className="mt-auto px-2">
-                <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-divider text-zinc-900 dark:text-zinc-100 text-sm shadow-sm">
-                    <p className="font-bold text-2xl text-zinc-900 dark:text-white">SisaBerapa</p>
-                    <p className="text-zinc-500 text-xs">Hubungi pengembang jika ada kendala sistem.</p>
+            <div className="mt-auto pt-4 border-t border-divider">
+                <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-divider">
+                    <span className="text-sm font-bold text-zinc-500">Mode Tampilan</span>
+                    <ThemeSwitch />
                 </div>
             </div>
         </aside>

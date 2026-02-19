@@ -8,13 +8,14 @@ import { startOfDay, startOfWeek, startOfMonth, startOfYear, subDays, endOfDay }
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
 }) {
   const session = await auth();
-  const { range = "month" } = await searchParams;
+  const { range = "month", from, to } = await searchParams;
 
   const now = new Date();
   let startDate: Date;
+  let endDate: Date = endOfDay(now);
 
   switch (range) {
     case "today":
@@ -28,6 +29,10 @@ export default async function DashboardPage({
       break;
     case "all":
       startDate = new Date(0);
+      break;
+    case "custom":
+      startDate = from ? startOfDay(new Date(from)) : startOfMonth(now);
+      endDate = to ? endOfDay(new Date(to)) : endOfDay(now);
       break;
     case "month":
     default:
@@ -48,7 +53,8 @@ export default async function DashboardPage({
     .where(
       and(
         eq(transactions.type, 'INCOME'),
-        gte(transactions.date, startDate)
+        gte(transactions.date, startDate),
+        lte(transactions.date, endDate)
       )
     );
 
@@ -58,7 +64,8 @@ export default async function DashboardPage({
     .where(
       and(
         eq(transactions.type, 'EXPENSE'),
-        gte(transactions.date, startDate)
+        gte(transactions.date, startDate),
+        lte(transactions.date, endDate)
       )
     );
 
@@ -90,7 +97,12 @@ export default async function DashboardPage({
       type: transactions.type,
     })
     .from(transactions)
-    .where(gte(transactions.date, startDate))
+    .where(
+      and(
+        gte(transactions.date, startDate),
+        lte(transactions.date, endDate)
+      )
+    )
     .orderBy(transactions.date);
 
   // 5. Get Recent Transactions

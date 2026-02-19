@@ -1,17 +1,37 @@
 "use client";
 
-import { Tabs, Tab } from "@heroui/react";
+import { Select, SelectItem, Input } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export function DashboardFilters({ currentRange }: { currentRange: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const handleRangeChange = (key: any) => {
+    const [startDate, setStartDate] = useState(searchParams.get("from") || "");
+    const [endDate, setEndDate] = useState(searchParams.get("to") || "");
+
+    const handleRangeChange = (keys: any) => {
+        const key = Array.from(keys)[0];
         const params = new URLSearchParams(searchParams.toString());
-        params.set("range", key);
+        params.set("range", String(key));
+
+        if (key !== "custom") {
+            params.delete("from");
+            params.delete("to");
+        }
+
         router.push(`/?${params.toString()}`);
+    };
+
+    const handleDateUpdate = () => {
+        if (startDate && endDate) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("from", startDate);
+            params.set("to", endDate);
+            router.push(`/?${params.toString()}`);
+        }
     };
 
     return (
@@ -25,23 +45,52 @@ export function DashboardFilters({ currentRange }: { currentRange: string }) {
                     <p className="text-tiny text-default-500">Filter statistik dashboard</p>
                 </div>
             </div>
-            <Tabs
-                selectedKey={currentRange}
-                onSelectionChange={handleRangeChange}
-                variant="pills"
-                color="primary"
-                classNames={{
-                    tabList: "bg-zinc-100 dark:bg-zinc-800",
-                    cursor: "bg-zinc-900 dark:bg-zinc-100 shadow-sm",
-                    tabContent: "font-bold group-data-[selected=true]:text-white dark:group-data-[selected=true]:text-zinc-900"
-                }}
-            >
-                <Tab key="today" title="Hari Ini" />
-                <Tab key="week" title="Minggu Ini" />
-                <Tab key="month" title="Bulan Ini" />
-                <Tab key="year" title="Tahun Ini" />
-                <Tab key="all" title="Semua" />
-            </Tabs>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
+                {currentRange === "custom" && (
+                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                        <Input
+                            type="date"
+                            size="sm"
+                            label="Dari"
+                            value={startDate}
+                            onValueChange={setStartDate}
+                            onBlur={handleDateUpdate}
+                            className="w-32"
+                        />
+                        <Input
+                            type="date"
+                            size="sm"
+                            label="Sampai"
+                            value={endDate}
+                            onValueChange={setEndDate}
+                            onBlur={handleDateUpdate}
+                            className="w-32"
+                        />
+                    </div>
+                )}
+                <Select
+                    label="Rentang Waktu"
+                    size="sm"
+                    className="w-48"
+                    selectedKeys={[currentRange]}
+                    onSelectionChange={handleRangeChange}
+                    disallowEmptySelection
+                    renderValue={(items: any) => {
+                        return items.map((item: any) => (
+                            <div key={item.key} className="flex items-center gap-2 font-bold">
+                                <span>{item.props.textValue}</span>
+                            </div>
+                        ));
+                    }}
+                >
+                    <SelectItem key="today" textValue="Hari Ini">Hari Ini</SelectItem>
+                    <SelectItem key="week" textValue="Minggu Ini">Minggu Ini</SelectItem>
+                    <SelectItem key="month" textValue="Bulan Ini">Bulan Ini</SelectItem>
+                    <SelectItem key="year" textValue="Tahun Ini">Tahun Ini</SelectItem>
+                    <SelectItem key="all" textValue="Semua">Semua</SelectItem>
+                    <SelectItem key="custom" textValue="Custom">Custom Range</SelectItem>
+                </Select>
+            </div>
         </div>
     );
 }
