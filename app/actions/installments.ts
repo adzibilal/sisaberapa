@@ -8,20 +8,31 @@ import { revalidatePath } from "next/cache";
 export async function addInstallment(data: {
   name: string;
   totalAmount: number;
-  monthlyAmount: number;
-  totalMonths: number;
+  monthlyAmount?: number;
+  totalMonths?: number;
+  paidMonths?: number;
+  currentPaid?: number;
   startDate: Date;
 }) {
+  const paidMonths = data.paidMonths || 0;
+  const currentPaid = data.currentPaid || 0;
+  const isCompleted = currentPaid >= data.totalAmount;
+
   await db.insert(installments).values({
     ...data,
-    paidMonths: 0,
-    status: "ACTIVE",
+    paidMonths: paidMonths,
+    currentPaid: currentPaid,
+    status: isCompleted ? "COMPLETED" : "ACTIVE",
   });
   revalidatePath("/installments");
   revalidatePath("/");
 }
 
-export async function payInstallment(id: number, fundSourceId: number) {
+export async function payInstallment(
+  id: number,
+  fundSourceId: number,
+  amount: number,
+) {
   await db.transaction(async (tx) => {
     // 1. Get installment details
     const [installment] = await tx
@@ -33,9 +44,9 @@ export async function payInstallment(id: number, fundSourceId: number) {
 
     // 2. Create expense transaction
     await tx.insert(transactions).values({
-      amount: installment.monthlyAmount,
+      amount: amount,
       type: "EXPENSE",
-      description: `Cicilan: ${installment.name} (Bulan ke-${installment.paidMonths + 1})`,
+      description: `Cicilan: ${installment.name}`,
       fundSourceId,
       installmentId: id,
       date: new Date(),
@@ -45,17 +56,24 @@ export async function payInstallment(id: number, fundSourceId: number) {
     await tx
       .update(fundSources)
       .set({
-        balance: sql`${fundSources.balance} - ${installment.monthlyAmount}`,
+        balance: sql`${fundSources.balance} - ${amount}`,
       })
       .where(eq(fundSources.id, fundSourceId));
 
     // 4. Update installment progress
-    const nextPaidMonths = installment.paidMonths + 1;
-    const isCompleted = nextPaidMonths >= installment.totalMonths;
+    const nextCurrentPaid = installment.currentPaid + amount;
+    const isCompleted = nextCurrentPaid >= installment.totalAmount;
+
+    // Optional: Calculate pseudo paidMonths based on average or just use amount
+    const nextPaidMonths = Math.floor(
+      (nextCurrentPaid / installment.totalAmount) *
+        (installment.totalMonths ?? 0),
+    );
 
     await tx
       .update(installments)
       .set({
+        currentPaid: nextCurrentPaid,
         paidMonths: nextPaidMonths,
         status: isCompleted ? "COMPLETED" : "ACTIVE",
       })

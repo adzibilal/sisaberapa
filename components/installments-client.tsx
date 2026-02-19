@@ -36,8 +36,10 @@ export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
                         <CardHeader className="flex justify-between items-start">
                             <div>
                                 <h3 className="text-lg font-bold">{item.name}</h3>
-                                <p className="text-small text-default-500">
-                                    Rp {item.monthlyAmount.toLocaleString('id-ID')} / bulan
+                                <p className="text-small text-default-500 uppercase font-semibold">
+                                    {item.monthlyAmount > 0
+                                        ? `Rp ${item.monthlyAmount.toLocaleString('id-ID')} / bulan`
+                                        : "Pembayaran Flexible"}
                                 </p>
                             </div>
                             <Chip color={item.status === "ACTIVE" ? "primary" : "success"} variant="flat">
@@ -47,16 +49,20 @@ export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
                         <CardBody className="space-y-4">
                             <div className="flex justify-between text-small">
                                 <span>Progres</span>
-                                <span className="font-bold">{item.paidMonths} / {item.totalMonths} Bulan</span>
+                                <span className="font-bold">
+                                    Rp {item.currentPaid.toLocaleString('id-ID')} / Rp {item.totalAmount.toLocaleString('id-ID')}
+                                </span>
                             </div>
                             <Progress
-                                value={(item.paidMonths / item.totalMonths) * 100}
+                                value={(item.currentPaid / item.totalAmount) * 100}
                                 color={item.status === "ACTIVE" ? "primary" : "success"}
                                 className="max-w-md"
                             />
                             <div className="flex justify-between text-small">
-                                <span>Total Pinjaman</span>
-                                <span className="font-semibold text-danger">Rp {item.totalAmount.toLocaleString('id-ID')}</span>
+                                <span>Sisa Tagihan</span>
+                                <span className="font-semibold text-danger">
+                                    Rp {(item.totalAmount - item.currentPaid).toLocaleString('id-ID')}
+                                </span>
                             </div>
                         </CardBody>
                         <CardFooter>

@@ -11,19 +11,21 @@ import {
     useDisclosure,
     Select,
     SelectItem,
+    Input,
 } from "@heroui/react";
 import { payInstallment } from "@/app/actions/installments";
 
 export function PayInstallmentModal({ installment, fundSources }: { installment: any, fundSources: any[] }) {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [fundSourceId, setFundSourceId] = useState("");
+    const [amount, setAmount] = useState(installment.monthlyAmount.toString());
     const [loading, setLoading] = useState(false);
 
     const handlePay = async () => {
-        if (!fundSourceId) return;
+        if (!fundSourceId || !amount) return;
         setLoading(true);
         try {
-            await payInstallment(installment.id, parseInt(fundSourceId));
+            await payInstallment(installment.id, parseInt(fundSourceId), parseFloat(amount));
             onClose();
         } catch (error) {
             console.error(error);
@@ -42,10 +44,24 @@ export function PayInstallmentModal({ installment, fundSources }: { installment:
                     {(onClose) => (
                         <>
                             <ModalHeader>Bayar Cicilan: {installment.name}</ModalHeader>
-                            <ModalBody>
+                            <ModalBody className="space-y-4">
                                 <p className="text-default-600">
-                                    Pembayaran sebesar <span className="font-bold text-danger">Rp {installment.monthlyAmount.toLocaleString('id-ID')}</span> akan dicatat sebagai pengeluaran bulan ini.
+                                    Masukkan nominal yang ingin dibayarkan.
                                 </p>
+                                <Input
+                                    label="Nominal Pembayaran"
+                                    placeholder="0.00"
+                                    variant="bordered"
+                                    type="number"
+                                    value={amount}
+                                    onValueChange={setAmount}
+                                    startContent={
+                                        <div className="pointer-events-none flex items-center">
+                                            <span className="text-default-400 text-small">Rp</span>
+                                        </div>
+                                    }
+                                    isRequired
+                                />
                                 <Select
                                     label="Pilih Sumber Dana"
                                     placeholder="Pilih rekening/dompet"
