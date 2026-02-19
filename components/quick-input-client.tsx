@@ -22,6 +22,7 @@ export type QuickInputData = {
     fundSourceId: number;
     categoryId: number | null;
     type: "INCOME" | "EXPENSE";
+    date: Date;
 };
 
 type Category = {
@@ -51,7 +52,8 @@ export function QuickInputClient({ categories, fundSources }: { categories: Cate
             // Ensure result has type, defaulting to EXPENSE if not present (safeguard)
             const dataWithType = {
                 ...result,
-                type: result.type || "EXPENSE"
+                type: result.type || "EXPENSE",
+                date: new Date(result.date),
             };
             setParsedData(dataWithType);
         } catch (error) {
@@ -159,6 +161,14 @@ export function QuickInputClient({ categories, fundSources }: { categories: Cate
                     <Divider />
                     <CardBody className="p-6 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Select
+                                label="Tipe Transaksi"
+                                selectedKeys={[parsedData.type]}
+                                onSelectionChange={(keys) => setParsedData({ ...parsedData, type: (Array.from(keys)[0] as "INCOME" | "EXPENSE") })}
+                            >
+                                <SelectItem key="EXPENSE">Pengeluaran</SelectItem>
+                                <SelectItem key="INCOME">Pemasukan</SelectItem>
+                            </Select>
                             <Input
                                 label="Deskripsi"
                                 value={parsedData.description}
@@ -169,6 +179,12 @@ export function QuickInputClient({ categories, fundSources }: { categories: Cate
                                 type="number"
                                 value={parsedData.amount.toString()}
                                 onValueChange={(v: string) => setParsedData({ ...parsedData, amount: parseFloat(v) })}
+                            />
+                            <Input
+                                label="Tanggal"
+                                type="date"
+                                value={parsedData.date.toISOString().split('T')[0]}
+                                onValueChange={(v: string) => setParsedData({ ...parsedData, date: new Date(v) })}
                             />
                             <Select
                                 aria-label="Sumber Dana"
