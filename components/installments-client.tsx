@@ -1,0 +1,72 @@
+"use client";
+
+import {
+    Progress,
+    Card,
+    CardHeader,
+    CardBody,
+    CardFooter,
+    Chip
+} from "@heroui/react";
+import { InstallmentForm } from "@/components/installment-form";
+import { PayInstallmentModal } from "@/components/pay-installment-modal";
+
+interface InstallmentsClientProps {
+    data: any[];
+    sources: any[];
+}
+
+export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold">Cicilan Berjalan</h1>
+                    <p className="text-default-500">Pantau progres cicilan kamu dan istri.</p>
+                </div>
+                <InstallmentForm />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {data.length === 0 && (
+                    <p className="col-span-full text-center text-default-400 py-10">Belum ada cicilan yang didaftarkan.</p>
+                )}
+                {data.map((item) => (
+                    <Card key={item.id} className="p-2">
+                        <CardHeader className="flex justify-between items-start">
+                            <div>
+                                <h3 className="text-lg font-bold">{item.name}</h3>
+                                <p className="text-small text-default-500">
+                                    Rp {item.monthlyAmount.toLocaleString('id-ID')} / bulan
+                                </p>
+                            </div>
+                            <Chip color={item.status === "ACTIVE" ? "primary" : "success"} variant="flat">
+                                {item.status === "ACTIVE" ? "Aktif" : "Lunas"}
+                            </Chip>
+                        </CardHeader>
+                        <CardBody className="space-y-4">
+                            <div className="flex justify-between text-small">
+                                <span>Progres</span>
+                                <span className="font-bold">{item.paidMonths} / {item.totalMonths} Bulan</span>
+                            </div>
+                            <Progress
+                                value={(item.paidMonths / item.totalMonths) * 100}
+                                color={item.status === "ACTIVE" ? "primary" : "success"}
+                                className="max-w-md"
+                            />
+                            <div className="flex justify-between text-small">
+                                <span>Total Pinjaman</span>
+                                <span className="font-semibold text-danger">Rp {item.totalAmount.toLocaleString('id-ID')}</span>
+                            </div>
+                        </CardBody>
+                        <CardFooter>
+                            {item.status === "ACTIVE" && (
+                                <PayInstallmentModal installment={item} fundSources={sources} />
+                            )}
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}
