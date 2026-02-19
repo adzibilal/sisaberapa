@@ -14,7 +14,13 @@ import {
 import { PlusIcon, PencilIcon } from "@/components/icons";
 import { addBill, updateBill } from "@/app/actions/bills";
 
-export function BillForm({ bill }: { bill?: any }) {
+type Bill = {
+    id: number;
+    name: string;
+    amount: number;
+};
+
+export function BillForm({ bill }: { bill?: Bill }) {
     const isEditing = !!bill;
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [name, setName] = useState(bill?.name || "");

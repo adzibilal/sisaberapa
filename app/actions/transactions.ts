@@ -10,10 +10,10 @@ export async function addTransaction(data: {
   type: "INCOME" | "EXPENSE";
   description: string;
   fundSourceId: number;
-  categoryId?: number;
+  categoryId?: number | null;
   installmentId?: number;
   date?: Date;
-}) {
+}): Promise<number | undefined> {
   let transactionId: number | undefined;
 
   await db.transaction(async (tx) => {

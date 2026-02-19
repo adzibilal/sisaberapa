@@ -6,7 +6,17 @@ import { categories, fundSources } from "@/db/schema";
 
 const openai = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
 
-export async function processQuickInput(text: string) {
+export type QuickInputResult = {
+  amount: number;
+  type: "INCOME" | "EXPENSE";
+  description: string;
+  categoryId: number | null;
+  fundSourceId: number;
+};
+
+export async function processQuickInput(
+  text: string,
+): Promise<QuickInputResult> {
   // 1. Fetch context from DB
   const allCategories = await db.select().from(categories);
   const allSources = await db.select().from(fundSources);
@@ -54,9 +64,21 @@ export async function processQuickInput(text: string) {
 
     console.log("AI Raw Response:", jsonText);
 
-    return JSON.parse(jsonText);
-  } catch (error: any) {
+    const data = JSON.parse(jsonText);
+    return {
+      amount: Number(data.amount),
+      type:
+        data.type === "INCOME" || data.type === "EXPENSE"
+          ? data.type
+          : "EXPENSE",
+      description: String(data.description),
+      categoryId: data.categoryId ? Number(data.categoryId) : null,
+      fundSourceId: Number(data.fundSourceId),
+    };
+  } catch (error: unknown) {
     console.error("AI Error Details:", error);
-    throw new Error(`AI Error: ${error.message || "Unknown error"}`);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`AI Error: ${errorMessage}`);
   }
 }

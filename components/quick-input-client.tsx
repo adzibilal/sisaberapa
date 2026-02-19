@@ -8,22 +8,36 @@ import {
     CardBody,
     CardHeader,
     Divider,
-    Autocomplete,
-    AutocompleteItem,
     Select,
     SelectItem,
 } from "@heroui/react";
-import { SparklesIcon, CheckIcon, XIcon, Loader2 } from "lucide-react";
+import { SparklesIcon, CheckIcon } from "lucide-react";
 import { processQuickInput } from "@/app/actions/quick-input";
 import { addTransaction, deleteTransaction } from "@/app/actions/transactions";
-import { useRouter } from "next/navigation";
 
 
-export function QuickInputClient({ categories, fundSources }: { categories: any[], fundSources: any[] }) {
-    const router = useRouter();
+export type QuickInputData = {
+    description: string;
+    amount: number;
+    fundSourceId: number;
+    categoryId: number | null;
+    type: "INCOME" | "EXPENSE";
+};
+
+type Category = {
+    id: number;
+    name: string;
+};
+
+type FundSource = {
+    id: number;
+    name: string;
+};
+
+export function QuickInputClient({ categories, fundSources }: { categories: Category[], fundSources: FundSource[] }) {
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
-    const [parsedData, setParsedData] = useState<any>(null);
+    const [parsedData, setParsedData] = useState<QuickInputData | null>(null);
     const [saving, setSaving] = useState(false);
     const [lastTransactionId, setLastTransactionId] = useState<number | null>(null);
     const [undoing, setUndoing] = useState(false);
@@ -34,7 +48,12 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
         setLoading(true);
         try {
             const result = await processQuickInput(input);
-            setParsedData(result);
+            // Ensure result has type, defaulting to EXPENSE if not present (safeguard)
+            const dataWithType = {
+                ...result,
+                type: result.type || "EXPENSE"
+            };
+            setParsedData(dataWithType);
         } catch (error) {
             alert("Gagal memproses input. Coba lagi dengan kalimat yang lebih jelas.");
         } finally {
@@ -43,13 +62,13 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
     };
 
     const handleConfirm = async () => {
+        if (!parsedData) return;
         setSaving(true);
         try {
             const txId = await addTransaction(parsedData);
             setLastTransactionId(txId || null);
             setParsedData(null);
             setInput("");
-            // router.refresh(); // Refresh data in background if needed, but we aren't displaying it here.
         } catch (error) {
             alert("Gagal menyimpan transaksi.");
         } finally {
@@ -155,7 +174,7 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                                 aria-label="Sumber Dana"
                                 label="Sumber Dana"
                                 selectedKeys={[parsedData.fundSourceId.toString()]}
-                                onSelectionChange={(keys: any) => setParsedData({ ...parsedData, fundSourceId: Number(Array.from(keys)[0]) })}
+                                onSelectionChange={(keys) => setParsedData({ ...parsedData, fundSourceId: Number(Array.from(keys)[0]) })}
                             >
                                 {fundSources.map((s) => (
                                     <SelectItem key={s.id.toString()}>
@@ -166,8 +185,8 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                             <Select
                                 aria-label="Kategori"
                                 label="Kategori"
-                                selectedKeys={[parsedData.categoryId?.toString()]}
-                                onSelectionChange={(keys: any) => setParsedData({ ...parsedData, categoryId: Number(Array.from(keys)[0]) })}
+                                selectedKeys={parsedData.categoryId ? [parsedData.categoryId.toString()] : []}
+                                onSelectionChange={(keys) => setParsedData({ ...parsedData, categoryId: Number(Array.from(keys)[0]) })}
                             >
                                 {categories.map((c) => (
                                     <SelectItem key={c.id.toString()}>
@@ -209,7 +228,7 @@ export function QuickInputClient({ categories, fundSources }: { categories: any[
                             onClick={() => setInput(tip)}
                             className="text-tiny px-2 py-1 rounded-full border border-divider hover:bg-default-100 transition-colors"
                         >
-                            "{tip}"
+                            &quot;{tip}&quot;
                         </button>
                     ))}
                 </div>
