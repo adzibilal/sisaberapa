@@ -64,6 +64,14 @@ export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
                                     Rp {(item.totalAmount - item.currentPaid).toLocaleString('id-ID')}
                                 </span>
                             </div>
+                            {item.totalMonths && (
+                                <div className="flex justify-between text-small">
+                                    <span className="text-default-400">Cicilan ke-</span>
+                                    <span className="font-bold text-primary">
+                                        {item.paidMonths} / {item.totalMonths}
+                                    </span>
+                                </div>
+                            )}
                         </CardBody>
                         <CardFooter>
                             {item.status === "ACTIVE" && (
