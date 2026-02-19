@@ -85,3 +85,45 @@ export async function payInstallment(
   revalidatePath("/fund-sources");
   revalidatePath("/");
 }
+
+export async function updateInstallment(
+  id: number,
+  data: {
+    name: string;
+    totalAmount: number;
+    monthlyAmount?: number;
+    totalMonths?: number;
+  },
+) {
+  await db.update(installments).set(data).where(eq(installments.id, id));
+  revalidatePath("/installments");
+  revalidatePath("/");
+}
+
+export async function deleteInstallment(id: number) {
+  await db.delete(installments).where(eq(installments.id, id));
+  revalidatePath("/installments");
+  revalidatePath("/");
+}
+
+export async function getInstallmentTransactions(installmentId: number) {
+  const [installment] = await db
+    .select({ name: installments.name })
+    .from(installments)
+    .where(eq(installments.id, installmentId));
+
+  if (!installment) return [];
+
+  return db
+    .select({
+      id: transactions.id,
+      amount: transactions.amount,
+      date: transactions.date,
+      description: transactions.description,
+      fundSourceName: fundSources.name,
+    })
+    .from(transactions)
+    .leftJoin(fundSources, eq(transactions.fundSourceId, fundSources.id))
+    .where(eq(transactions.installmentId, installmentId))
+    .orderBy(sql`${transactions.date} DESC`);
+}

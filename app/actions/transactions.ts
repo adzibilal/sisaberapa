@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { transactions, fundSources, bills } from "@/db/schema";
+import { transactions, fundSources, bills, installments } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -100,6 +100,39 @@ export async function deleteTransaction(id: number) {
           .update(bills)
           .set({ lastPaidAt: latestTx ? latestTx.date : null })
           .where(eq(bills.id, billId));
+      }
+    }
+
+    // 5. Update installment currentPaid/paidMonths/status if applicable
+    if (transaction.installmentId) {
+      const installmentId = transaction.installmentId;
+
+      const [installment] = await tx
+        .select()
+        .from(installments)
+        .where(eq(installments.id, installmentId));
+
+      if (installment) {
+        const newCurrentPaid = Math.max(
+          0,
+          installment.currentPaid - Number(transaction.amount),
+        );
+        const newPaidMonths = installment.totalMonths
+          ? Math.floor(
+              (newCurrentPaid / installment.totalAmount) *
+                installment.totalMonths,
+            )
+          : Math.max(0, installment.paidMonths - 1);
+        const isCompleted = newCurrentPaid >= installment.totalAmount;
+
+        await tx
+          .update(installments)
+          .set({
+            currentPaid: newCurrentPaid,
+            paidMonths: newPaidMonths,
+            status: isCompleted ? "COMPLETED" : "ACTIVE",
+          })
+          .where(eq(installments.id, installmentId));
       }
     }
   });

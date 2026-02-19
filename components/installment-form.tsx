@@ -14,16 +14,21 @@ import {
     Tab,
 } from "@heroui/react";
 import { PlusIcon } from "@/components/icons";
-import { addInstallment } from "@/app/actions/installments";
+import { PencilIcon } from "lucide-react";
+import { addInstallment, updateInstallment } from "@/app/actions/installments";
 
-export function InstallmentForm() {
+export function InstallmentForm({ installment }: { installment?: any }) {
+    const isEditing = !!installment;
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-    const [name, setName] = useState("");
-    const [isFlexible, setIsFlexible] = useState(false);
-    const [monthlyAmount, setMonthlyAmount] = useState("");
-    const [totalMonths, setTotalMonths] = useState("");
-    const [manualTotalAmount, setManualTotalAmount] = useState("");
-    const [paidMonths, setPaidMonths] = useState("0");
+
+    const [name, setName] = useState(installment?.name || "");
+    const [isFlexible, setIsFlexible] = useState(
+        isEditing ? (installment.monthlyAmount === 0 || installment.monthlyAmount == null) : false
+    );
+    const [monthlyAmount, setMonthlyAmount] = useState(installment?.monthlyAmount?.toString() || "");
+    const [totalMonths, setTotalMonths] = useState(installment?.totalMonths?.toString() || "");
+    const [manualTotalAmount, setManualTotalAmount] = useState(installment?.totalAmount?.toString() || "");
+    const [paidMonths, setPaidMonths] = useState(installment?.paidMonths?.toString() || "0");
     const [loading, setLoading] = useState(false);
 
     // Auto-calculate or use manual total amount
@@ -34,21 +39,30 @@ export function InstallmentForm() {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            await addInstallment({
-                name,
-                totalAmount: totalAmount,
-                monthlyAmount: isFlexible ? 0 : parseFloat(monthlyAmount),
-                totalMonths: isFlexible ? 0 : parseInt(totalMonths),
-                paidMonths: isFlexible ? 0 : parseInt(paidMonths),
-                currentPaid: isFlexible ? 0 : (parseFloat(monthlyAmount) || 0) * (parseInt(paidMonths) || 0),
-                startDate: new Date(),
-            });
-            setName("");
-            setMonthlyAmount("");
-            setTotalMonths("");
-            setManualTotalAmount("");
-            setPaidMonths("0");
-            setIsFlexible(false);
+            if (isEditing) {
+                await updateInstallment(installment.id, {
+                    name,
+                    totalAmount: isFlexible ? parseFloat(manualTotalAmount) : totalAmount,
+                    monthlyAmount: isFlexible ? 0 : parseFloat(monthlyAmount),
+                    totalMonths: isFlexible ? 0 : parseInt(totalMonths),
+                });
+            } else {
+                await addInstallment({
+                    name,
+                    totalAmount: totalAmount,
+                    monthlyAmount: isFlexible ? 0 : parseFloat(monthlyAmount),
+                    totalMonths: isFlexible ? 0 : parseInt(totalMonths),
+                    paidMonths: isFlexible ? 0 : parseInt(paidMonths),
+                    currentPaid: isFlexible ? 0 : (parseFloat(monthlyAmount) || 0) * (parseInt(paidMonths) || 0),
+                    startDate: new Date(),
+                });
+                setName("");
+                setMonthlyAmount("");
+                setTotalMonths("");
+                setManualTotalAmount("");
+                setPaidMonths("0");
+                setIsFlexible(false);
+            }
             onClose();
         } catch (error) {
             console.error(error);
@@ -59,36 +73,50 @@ export function InstallmentForm() {
 
     return (
         <>
-            <Button
-                onPress={onOpen}
-                className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold shadow-lg uppercase tracking-tighter"
-                startContent={<PlusIcon />}
-            >
-                Tambah Cicilan
-            </Button>
+            {isEditing ? (
+                <Button
+                    isIconOnly
+                    size="sm"
+                    variant="light"
+                    color="primary"
+                    onPress={onOpen}
+                >
+                    <PencilIcon size={16} />
+                </Button>
+            ) : (
+                <Button
+                    onPress={onOpen}
+                    className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold shadow-lg uppercase tracking-tighter"
+                    startContent={<PlusIcon />}
+                >
+                    Tambah Cicilan
+                </Button>
+            )}
             <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center" className="rounded-3xl">
                 <ModalContent>
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1 text-2xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white pt-8 px-8">
-                                Tambah Tracking Cicilan
+                                {isEditing ? "Edit Cicilan" : "Tambah Tracking Cicilan"}
                             </ModalHeader>
                             <ModalBody className="gap-6 px-8 pb-8">
-                                <Tabs
-                                    fullWidth
-                                    size="lg"
-                                    aria-label="Mode Cicilan"
-                                    onSelectionChange={(key) => setIsFlexible(key === "flexible")}
-                                    classNames={{
-                                        tabList: "bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl",
-                                        cursor: "bg-white dark:bg-zinc-700 shadow-sm rounded-xl",
-                                        tab: "h-10",
-                                        tabContent: "font-bold tracking-tight"
-                                    }}
-                                >
-                                    <Tab key="fixed" title="TETAP" />
-                                    <Tab key="flexible" title="FLEXIBLE" />
-                                </Tabs>
+                                {!isEditing && (
+                                    <Tabs
+                                        fullWidth
+                                        size="lg"
+                                        aria-label="Mode Cicilan"
+                                        onSelectionChange={(key) => setIsFlexible(key === "flexible")}
+                                        classNames={{
+                                            tabList: "bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl",
+                                            cursor: "bg-white dark:bg-zinc-700 shadow-sm rounded-xl",
+                                            tab: "h-10",
+                                            tabContent: "font-bold tracking-tight"
+                                        }}
+                                    >
+                                        <Tab key="fixed" title="TETAP" />
+                                        <Tab key="flexible" title="FLEXIBLE" />
+                                    </Tabs>
+                                )}
 
                                 <Input
                                     label="Nama Cicilan"
@@ -139,18 +167,20 @@ export function InstallmentForm() {
                                             className="font-mono font-bold text-lg bg-zinc-50 dark:bg-zinc-800"
                                         />
 
-                                        <Input
-                                            label="Cicilan ke- (Saat ini berjalan)"
-                                            placeholder="0"
-                                            type="number"
-                                            variant="bordered"
-                                            radius="lg"
-                                            labelPlacement="outside"
-                                            description="Sudah cicilan ke berapa saat ini?"
-                                            value={paidMonths}
-                                            onValueChange={setPaidMonths}
-                                            className="font-medium"
-                                        />
+                                        {!isEditing && (
+                                            <Input
+                                                label="Cicilan ke- (Saat ini berjalan)"
+                                                placeholder="0"
+                                                type="number"
+                                                variant="bordered"
+                                                radius="lg"
+                                                labelPlacement="outside"
+                                                description="Sudah cicilan ke berapa saat ini?"
+                                                value={paidMonths}
+                                                onValueChange={setPaidMonths}
+                                                className="font-medium"
+                                            />
+                                        )}
                                     </>
                                 ) : (
                                     <Input
@@ -176,7 +206,7 @@ export function InstallmentForm() {
                                     onPress={handleSubmit}
                                     isLoading={loading}
                                 >
-                                    Simpan Tracking
+                                    {isEditing ? "Update Cicilan" : "Simpan Tracking"}
                                 </Button>
                             </ModalFooter>
                         </>

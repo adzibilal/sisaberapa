@@ -1,15 +1,26 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import {
     Progress,
     Card,
     CardHeader,
     CardBody,
     CardFooter,
-    Chip
+    Chip,
+    Button,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    useDisclosure,
 } from "@heroui/react";
 import { InstallmentForm } from "@/components/installment-form";
 import { PayInstallmentModal } from "@/components/pay-installment-modal";
+import { InstallmentHistoryModal } from "@/components/installment-history-modal";
+import { deleteInstallment } from "@/app/actions/installments";
+import { TrashIcon } from "lucide-react";
 
 interface InstallmentsClientProps {
     data: any[];
@@ -17,6 +28,25 @@ interface InstallmentsClientProps {
 }
 
 export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [isPending, startTransition] = useTransition();
+
+    const handleDeleteClick = (id: number) => {
+        setSelectedId(id);
+        onOpen();
+    };
+
+    const confirmDelete = () => {
+        if (selectedId) {
+            startTransition(async () => {
+                await deleteInstallment(selectedId);
+                onOpenChange();
+                setSelectedId(null);
+            });
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -42,9 +72,22 @@ export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
                                         : "Pembayaran Flexible"}
                                 </p>
                             </div>
-                            <Chip color={item.status === "ACTIVE" ? "primary" : "success"} variant="flat">
-                                {item.status === "ACTIVE" ? "Aktif" : "Lunas"}
-                            </Chip>
+                            <div className="flex items-center gap-1">
+                                <Chip color={item.status === "ACTIVE" ? "primary" : "success"} variant="flat">
+                                    {item.status === "ACTIVE" ? "Aktif" : "Lunas"}
+                                </Chip>
+                                <InstallmentHistoryModal installment={item} />
+                                <InstallmentForm installment={item} />
+                                <Button
+                                    isIconOnly
+                                    size="sm"
+                                    variant="light"
+                                    color="danger"
+                                    onPress={() => handleDeleteClick(item.id)}
+                                >
+                                    <TrashIcon size={16} />
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardBody className="space-y-4">
                             <div className="flex justify-between text-small">
@@ -64,7 +107,7 @@ export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
                                     Rp {(item.totalAmount - item.currentPaid).toLocaleString('id-ID')}
                                 </span>
                             </div>
-                            {item.totalMonths && (
+                            {item.totalMonths > 0 && (
                                 <div className="flex justify-between text-small">
                                     <span className="text-default-400">Cicilan ke-</span>
                                     <span className="font-bold text-primary">
@@ -81,6 +124,37 @@ export function InstallmentsClient({ data, sources }: InstallmentsClientProps) {
                     </Card>
                 ))}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur" className="rounded-2xl">
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1 text-zinc-900 dark:text-white">Konfirmasi Hapus</ModalHeader>
+                            <ModalBody>
+                                <p className="text-zinc-500">
+                                    Apakah Anda yakin ingin menghapus cicilan ini?
+                                    <br />
+                                    <span className="text-xs text-zinc-400 font-italic mt-2 block italic">*Riwayat transaksi pembayaran cicilan ini tidak akan ikut terhapus.</span>
+                                </p>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="light" onPress={onClose} className="font-bold">
+                                    Batal
+                                </Button>
+                                <Button
+                                    color="danger"
+                                    onPress={confirmDelete}
+                                    isLoading={isPending}
+                                    className="font-bold px-6 shadow-lg shadow-red-200 dark:shadow-none"
+                                >
+                                    Ya, Hapus
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }
