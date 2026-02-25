@@ -42,7 +42,7 @@ export async function transferBalance(data: {
     // a. Outgoing Transfer from Source A
     await tx.insert(transactions).values({
       amount: amount,
-      type: "EXPENSE",
+      type: "TRANSFER",
       description: `Transfer ke ${toSource.name}`,
       fundSourceId: fromSourceId,
       date: new Date(),
@@ -51,7 +51,7 @@ export async function transferBalance(data: {
     // b. Incoming Transfer to Source B
     await tx.insert(transactions).values({
       amount: amount,
-      type: "INCOME",
+      type: "TRANSFER",
       description: `Transfer dari ${fromSource.name}`,
       fundSourceId: toSourceId,
       date: new Date(),

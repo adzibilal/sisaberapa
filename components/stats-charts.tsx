@@ -35,7 +35,7 @@ export function StatsCharts({
 
         if (existing) {
             if (curr.type === "INCOME") existing.pemasukan += curr.amount;
-            else existing.pengeluaran += curr.amount;
+            else if (curr.type === "EXPENSE") existing.pengeluaran += curr.amount;
         } else {
             acc.push({
                 date: dateStr,

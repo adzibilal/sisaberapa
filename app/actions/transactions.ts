@@ -59,11 +59,21 @@ export async function deleteTransaction(id: number) {
     if (!transaction) return;
 
     // 2. Revert balance
-    // If it was an INCOME, we subtract. If it was an EXPENSE, we add back.
-    const balanceReversion =
-      transaction.type === "INCOME"
-        ? -Number(transaction.amount)
-        : Number(transaction.amount);
+    let balanceReversion = 0;
+    if (transaction.type === "INCOME") {
+      balanceReversion = -Number(transaction.amount);
+    } else if (transaction.type === "EXPENSE") {
+      balanceReversion = Number(transaction.amount);
+    } else if (transaction.type === "TRANSFER") {
+      // For transfers, we check the description to see if it was outgoing or incoming
+      if (transaction.description?.includes("ke ")) {
+        // Outgoing transfer: balance was reduced, so add it back
+        balanceReversion = Number(transaction.amount);
+      } else if (transaction.description?.includes("dari ")) {
+        // Incoming transfer: balance was increased, so subtract it
+        balanceReversion = -Number(transaction.amount);
+      }
+    }
 
     await tx
       .update(fundSources)

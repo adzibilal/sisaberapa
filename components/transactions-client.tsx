@@ -20,7 +20,7 @@ import {
 import { TransactionForm } from "@/components/transaction-form";
 import { Trash2Icon } from "lucide-react";
 import { deleteTransaction } from "@/app/actions/transactions";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import clsx from "clsx";
 
 interface TransactionsClientProps {
@@ -33,6 +33,10 @@ export function TransactionsClient({ data, sources, cats }: TransactionsClientPr
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [isPending, startTransition] = useTransition();
+
+    const sortedData = useMemo(() => {
+        return [...data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }, [data]);
 
     const handleDelete = (id: number) => {
         setSelectedId(id);
@@ -71,7 +75,7 @@ export function TransactionsClient({ data, sources, cats }: TransactionsClientPr
                             <TableColumn className="font-bold text-center">AKSI</TableColumn>
                         </TableHeader>
                         <TableBody emptyContent={"Belum ada transaksi."}>
-                            {data.map((item) => (
+                            {sortedData.map((item) => (
                                 <TableRow key={item.id} className="border-b border-divider last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                                     <TableCell className="text-zinc-600 dark:text-zinc-400 font-mono text-xs">{new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</TableCell>
                                     <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">{item.description || "-"}</TableCell>
@@ -84,9 +88,11 @@ export function TransactionsClient({ data, sources, cats }: TransactionsClientPr
                                     <TableCell>
                                         <span className={clsx(
                                             "font-bold text-sm",
-                                            item.type === "INCOME" ? "text-green-600" : "text-red-600"
+                                            item.type === "INCOME" ? "text-green-600" :
+                                                item.type === "EXPENSE" ? "text-red-600" :
+                                                    "text-blue-600"
                                         )}>
-                                            {item.type === "INCOME" ? "+" : "-"} Rp {item.amount.toLocaleString('id-ID')}
+                                            {item.type === "INCOME" ? "+" : item.type === "EXPENSE" ? "-" : "•"} Rp {item.amount.toLocaleString('id-ID')}
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-center">

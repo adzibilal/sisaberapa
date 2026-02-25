@@ -11,6 +11,7 @@ import {
 export const transactionTypeEnum = pgEnum("transaction_type", [
   "INCOME",
   "EXPENSE",
+  "TRANSFER",
 ]);
 export const installmentStatusEnum = pgEnum("installment_status", [
   "ACTIVE",

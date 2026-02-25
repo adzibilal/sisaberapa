@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { DashboardFilters } from "./dashboard-filters";
 import { StatsCharts } from "./stats-charts";
 import { WalletIcon, TrendingUpIcon, TrendingDownIcon, LogOutIcon } from "lucide-react";
+import { TransferIcon } from "@/components/icons";
 
 interface DashboardClientProps {
     user: { name?: string | null };
@@ -111,8 +112,13 @@ export function DashboardClient({
                             {recentTransactions.map((tx) => (
                                 <div key={tx.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-default-50 transition-colors">
                                     <div className="flex items-center gap-4">
-                                        <div className={`p-3 rounded-xl ${tx.type === "INCOME" ? "bg-success-50 text-success" : "bg-danger-50 text-danger"}`}>
-                                            {tx.type === "INCOME" ? <TrendingUpIcon size={18} /> : <TrendingDownIcon size={18} />}
+                                        <div className={`p-3 rounded-xl ${tx.type === "INCOME" ? "bg-success-50 text-success" :
+                                            tx.type === "EXPENSE" ? "bg-danger-50 text-danger" :
+                                                "bg-blue-50 text-blue-600"
+                                            }`}>
+                                            {tx.type === "INCOME" ? <TrendingUpIcon size={18} /> :
+                                                tx.type === "EXPENSE" ? <TrendingDownIcon size={18} /> :
+                                                    <TransferIcon size={18} />}
                                         </div>
                                         <div>
                                             <p className="font-bold text-sm">{tx.description || tx.category?.name || "Transaksi"}</p>
@@ -121,8 +127,11 @@ export function DashboardClient({
                                             </p>
                                         </div>
                                     </div>
-                                    <p className={`text-sm font-black ${tx.type === "INCOME" ? "text-success" : "text-danger"}`}>
-                                        {tx.type === "INCOME" ? "+" : "-"} Rp {tx.amount.toLocaleString('id-ID')}
+                                    <p className={`text-sm font-black ${tx.type === "INCOME" ? "text-success" :
+                                        tx.type === "EXPENSE" ? "text-danger" :
+                                            "text-blue-600"
+                                        }`}>
+                                        {tx.type === "INCOME" ? "+" : tx.type === "EXPENSE" ? "-" : "•"} Rp {tx.amount.toLocaleString('id-ID')}
                                     </p>
                                 </div>
                             ))}
