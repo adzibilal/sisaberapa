@@ -6,6 +6,7 @@ import {
     CardHeader
 } from "@heroui/react";
 import { FundSourceForm } from "@/components/fund-source-form";
+import { TransferForm } from "@/components/transfer-form";
 import { CreditCardIcon, CpuIcon, WifiIcon } from "lucide-react";
 import clsx from "clsx";
 
@@ -21,7 +22,10 @@ export function FundSourcesClient({ data }: FundSourcesClientProps) {
                     <h1 className="text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">Budget Sources</h1>
                     <p className="text-zinc-500 text-sm">Kelola rekening dan dompet digital kamu dengan gaya.</p>
                 </div>
-                <FundSourceForm />
+                <div className="flex gap-2">
+                    <TransferForm fundSources={data} />
+                    <FundSourceForm />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
