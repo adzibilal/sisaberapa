@@ -13,7 +13,11 @@ export async function addBill(data: { name: string; amount: number }) {
   revalidatePath("/");
 }
 
-export async function payBill(id: number, fundSourceId: number) {
+export async function payBill(
+  id: number,
+  fundSourceId: number,
+  amount?: number,
+) {
   await db.transaction(async (tx) => {
     // 1. Get bill details
     const [bill] = await tx.select().from(bills).where(eq(bills.id, id));
@@ -21,8 +25,9 @@ export async function payBill(id: number, fundSourceId: number) {
     if (!bill) return;
 
     // 2. Create expense transaction
+    const finalAmount = amount ?? bill.amount;
     await tx.insert(transactions).values({
-      amount: bill.amount,
+      amount: finalAmount,
       type: "EXPENSE",
       description: `Tagihan: ${bill.name}`,
       fundSourceId,
@@ -34,7 +39,7 @@ export async function payBill(id: number, fundSourceId: number) {
     await tx
       .update(fundSources)
       .set({
-        balance: sql`${fundSources.balance} - ${bill.amount}`,
+        balance: sql`${fundSources.balance} - ${finalAmount}`,
       })
       .where(eq(fundSources.id, fundSourceId));
 

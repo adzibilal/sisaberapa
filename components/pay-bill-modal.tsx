@@ -11,19 +11,21 @@ import {
     useDisclosure,
     Select,
     SelectItem,
+    Input,
 } from "@heroui/react";
 import { payBill } from "@/app/actions/bills";
 
 export function PayBillModal({ bill, fundSources }: { bill: any, fundSources: any[] }) {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [fundSourceId, setFundSourceId] = useState("");
+    const [paidAmount, setPaidAmount] = useState(bill.amount.toString());
     const [loading, setLoading] = useState(false);
 
     const handlePay = async () => {
-        if (!fundSourceId) return;
+        if (!fundSourceId || !paidAmount) return;
         setLoading(true);
         try {
-            await payBill(bill.id, parseInt(fundSourceId));
+            await payBill(bill.id, parseInt(fundSourceId), parseFloat(paidAmount));
             onClose();
         } catch (error) {
             console.error(error);
@@ -48,6 +50,23 @@ export function PayBillModal({ bill, fundSources }: { bill: any, fundSources: an
                                     <p className="text-lg font-bold">{bill.name}</p>
                                     <p className="text-2xl font-black text-danger">Rp {bill.amount.toLocaleString('id-ID')}</p>
                                 </div>
+
+                                <Input
+                                    label="Nominal Pembayaran"
+                                    placeholder="0"
+                                    type="number"
+                                    variant="bordered"
+                                    radius="lg"
+                                    value={paidAmount}
+                                    onValueChange={setPaidAmount}
+                                    isRequired
+                                    startContent={
+                                        <div className="pointer-events-none flex items-center">
+                                            <span className="text-default-400 text-small">Rp</span>
+                                        </div>
+                                    }
+                                />
+
                                 <Select
                                     label="Pilih Sumber Dana"
                                     placeholder="Pilih rekening/dompet"
